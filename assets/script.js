@@ -1,3 +1,25 @@
+// анимируем заголовок
+let textWrapper = document.querySelector('.letters');
+//оборачиваем каждую букву в контейнер, чтобы потом работать с ними по отдельности
+textWrapper.innerHTML = textWrapper.textContent.replace(/\S/g, "<span class='letter'>$&</span>");
+
+anime.timeline({loop: true})
+  .add({
+    targets: '.letter',
+    scale: [0.3,1],
+    opacity: [0,1],
+    translateZ: 0,
+    easing: "linear",
+    duration: 600,
+    delay: (el, i) => 70 * (i+1)
+  }).add({
+    targets: '.title',
+    opacity: 0,
+    duration: 5000,
+    easing: "linear",
+    delay: 10000
+  });
+
 let taskDateElem = document.getElementById('datepicker');
 hideBlock( taskDateElem );
 
@@ -12,9 +34,7 @@ let errorBlock = document.getElementById('error-block');
 hideBlock( errorBlock );
 let errors = [];
 
-console.log("taskType " + taskTypeElem);
-
-// заполним список типов задач
+// заполним список типов задач, desc ен использован пока
 const taskTypesList = [
     {
         "id" : "housework",
@@ -33,6 +53,27 @@ const taskTypesList = [
     }
 
 ];
+
+// параметры статусов, можно добавить новые, пока есть:
+//  - цвет
+//  - индекс для подсчета количества задач за день
+const statusList = {
+    "created" : {
+        "color" : 'rgb(255, 99, 132)',
+        "ind": 0,
+        "extra-classes" : ['status-created']
+    },
+    "in-progress" : {
+        "color" : 'rgb(54, 162, 235)',
+        "ind" : 1
+    },
+    "done" : {
+        "color" : 'green',
+        "ind" : 2
+    }
+};
+
+// console.log("statusList " + statusList["created"]["color"]);
 
 // сначала пустая 
 createItemOfSelect(
@@ -82,20 +123,21 @@ let picker = new Pikaday({
         hideBlock( resultBlock );
         //очистить список задач
         taskList = [];
+        // очистить диаграмму, если она сейчас используется
         if ( myChart ) myChart.destroy();
     } 
 });
-console.log("taskDateElem.nextSibling " + taskDateElem.nextSibling);
+// установка минимальной даты, которую можно выбрать
+picker.setMinDate(new Date("2022-05-18"));
+
 taskDateElem.parentNode.insertBefore(picker.el, taskDateElem.nextSibling);
 
 taskDateElem.addEventListener("click", (event) => {
-    console.log("click на поле дата");
-    console.log("нужно показать календарь");
-    picker.el.style.display = "";
     showBlock( picker.el );
-    console.log("убрать выбор типа задачи");
     hideBlock( taskTypeElem );
-    console.log("убрать результат");
+
+    removeErrors();
+    hideBlock( errorBlock );
 });
 
 // это наш будущий чарт типа донат, который будет показывать, сколько задач в каком статусе за день
@@ -104,8 +146,9 @@ let myChart;
 taskTypeElem.addEventListener("change", (event) => {
     // при изменении показываем блок result-block со списком задач и диаграммой или скрываем блок result-block и очищаем данные
     let checkedTaskType = event.target.value;
-    console.log("Выбран тип задач " + checkedTaskType);
-    console.log("Выбрана дата " + checkedDate);
+
+    removeErrors();
+    hideBlock( errorBlock );
     
     taskList = [];
     if ( myChart ) myChart.destroy();
@@ -120,11 +163,6 @@ taskTypeElem.addEventListener("change", (event) => {
         // если выбран тип задач
         // зачитать список задач выбранного типа за выбранный день
         getData( checkedDate, checkedTaskType );
-        // taskList.forEach(element => {
-        //     console.log(element);
-        // });
-        // показать блок со списком задач и чартом
-        // showBlock( resultBlock );
 
     }
 });
@@ -188,11 +226,19 @@ function addTaskCard( item, parentElem ) {
         desc.textContent = item["task-desc"];
         cardDiv.appendChild(desc);
     }
-    let status = document.createElement("div");
-    status.textContent = item["status"];
-    status.setAttribute("class", "status");
-    cardDiv.appendChild(status);
+    if ( item["status"] ) {
+        let status = document.createElement("div");
+        status.textContent = item["status"];
+        // status.setAttribute("class", "status");
+        status.classList.add("status");
+        status.style.color = statusList[item["status"]]["color"];
 
+        if (statusList[item["status"]]["extra-classes"]) 
+            statusList[item["status"]]["extra-classes"].forEach(element => {
+                status.classList.add(element);
+            });
+        cardDiv.appendChild(status);
+    }        
 
     console.log("addTaskCard finished");
 }
@@ -222,38 +268,28 @@ function getData( day, taskTypeSelected ) {
                 (result[i]["date"] == day ) 
                 && ( result[i]["task-type"] == taskTypeSelected ) 
         ) {
-            // console.log("match " + typeof result[i]);
-            // for ( key in result[i] ) {
-            //         console.log(" --> " + key + " type " + typeof result[i][key] + " -- " + result[i][key]);
-            // }
             resultList.push(result[i]);
-            // console.log("resultList " + resultList);
         }
-        // for ( key in result[i] ) {
-        //     console.log(" --> " + key + " type " + typeof result[i][key] + " -- " + result[i][key]);
-        // }
       }
       // обрабатываем resultList, который нужно показать
       showBlock( resultBlock );
       if ( resultList.length ) {
             console.log("сейчас покажем задачи за день и тип");
-            // showBlock( resultBlock );
 
             let taskStatusNum = [ 0, 0, 0 ];
-            // if ( !resultList.length ) {
-            //     addTaskCard( { "task-title": "Задачи не найдены"}, resultItemsBlock );
-            // } else {
-                for ( res of resultList ) {
-                    addTaskCard( res, resultItemsBlock );
-                    if ( res['status'] == 'created' ) {
-                        taskStatusNum[0]++;
-                    } else if ( res['status'] == 'in-progress' ) {
-                        taskStatusNum[1]++;
-                    } else if ( res['status'] == 'done' ) {
-                        taskStatusNum[2]++;
-                    }
-                }
-            // }
+            for ( res of resultList ) {
+                addTaskCard( res, resultItemsBlock );
+                taskStatusNum[ statusList[res['status']]['ind'] ]++;
+            }
+            // анимация статуса created
+            anime.timeline({loop: true})
+               .add({
+                    targets: '.status-created',
+                    opacity: 0,
+                    duration: 500,
+                    easing: "linear",
+                    delay: 100
+                });
             let ctx = document.getElementById('myChart');
             let data = {
                 labels: [
@@ -275,15 +311,7 @@ function getData( day, taskTypeSelected ) {
             myChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: data,
-                // options: {
-                //     scales: {
-                //         y: {
-                //             beginAtZero: true
-                //         }
-                //     }
-                // }
             });
-            // createChart();
 
       } else {
           // нечего показывать
@@ -292,10 +320,8 @@ function getData( day, taskTypeSelected ) {
     })
     .catch(error => {
             console.log("error " + typeof error + " -- " + error);
-            // errors.push(); 
-            // for ( ee in error ) {
-            //     console.log(ee + " " + error[ee]);
-            // }
+            showBlock( errorBlock );
+            errorBlock.textContent = "Ошибка при загрузке данных " + error;
     } )
     ;
 }

@@ -27,6 +27,74 @@
     "status": "created",
     "date": "2022-05-21"
   },
+  {
+    "task-id": 35,
+    "task-type": "housework",
+    "task-title": "Запустить стиральную машину",
+    "status": "created",
+    "date": "2022-05-25"
+  },
+  {
+    "task-id": 36,
+    "task-type": "housework",
+    "task-title": "Вытереть пыль",
+    "status": "in-progress",
+    "date": "2022-05-25"
+  },
+  {
+    "task-id": 37,
+    "task-type": "housework",
+    "task-title": "Покупка продуктов для ужина",
+    "status": "done",
+    "date": "2022-05-25"
+  },
+  {
+    "task-id": 38,
+    "task-type": "housework",
+    "task-title": "Заказать клининг на следующую пятницу",
+    "status": "created",
+    "date": "2022-05-25"
+  },
+  {
+    "task-id": 39,
+    "task-type": "studying",
+    "task-title": "Созвон с группой",
+    "task-desc" : "Задать все вопросы и изучить инфу про webpack",
+    "status": "created",
+    "date": "2022-05-25"
+  },
+  {
+    "task-id": 40,
+    "task-type": "studying",
+    "task-title": "Составить вопросы",
+    "task-desc" : "Список накопившихся вопросов. Составить и задать их Кате.\nПо поводу библиотек и прочего.",
+    "status": "in-progress",
+    "date": "2022-05-25"
+  },
+  {
+    "task-id": 41,
+    "task-type": "studying",
+    "task-title": "HW Dashboard",
+    "task-desc" : "Почистить код от комментариев и отладочной печати",
+    "status": "in-progress",
+    "date": "2022-05-25"
+  },
+  {
+    "task-id": 41,
+    "task-type": "studying",
+    "task-title": "HW Dashboard",
+    "task-desc" : "Сдать работу",
+    "status": "created",
+    "date": "2022-05-25"
+  },
+  {
+    "task-id": 41,
+    "task-type": "studying",
+    "task-title": "HW Dashboard",
+    "task-desc" : "Закоммитить изменения в git",
+    "status": "done",
+    "date": "2022-05-25"
+  },
     {
       "task-id": 1,
       "task-type": "housework",
